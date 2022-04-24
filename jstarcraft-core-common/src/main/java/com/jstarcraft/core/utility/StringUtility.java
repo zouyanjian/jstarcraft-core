@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -79,6 +80,9 @@ public class StringUtility extends StringUtils {
     /** 单引号 */
     public static final String SINGLE_QUOTATION = "'";
 
+    /** 空格 */
+    public static final String SPACE = " ";
+
     /** 下划线 */
     public static final String UNDERSCORE = "_";
 
@@ -102,6 +106,26 @@ public class StringUtility extends StringUtils {
      */
     public static final String reflect(Object object) {
         return ReflectionToStringBuilder.toString(object);
+    }
+
+    /**
+     * 对字符串执行Java加密
+     * 
+     * @param string
+     * @return
+     */
+    public static final String escapeJava(String string) {
+        return StringEscapeUtils.escapeJava(string);
+    }
+
+    /**
+     * 对字符串执行Java解密
+     * 
+     * @param string
+     * @return
+     */
+    public static final String unescapeJava(String string) {
+        return StringEscapeUtils.unescapeJava(string);
     }
 
 }

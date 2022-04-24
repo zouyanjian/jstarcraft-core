@@ -15,32 +15,39 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ResourceAccessor {
 
-	/**
-	 * 仓储类型(默认注解的字段类型作为仓储类型)
-	 * 
-	 * @return
-	 */
-	Class<?> clazz() default Void.class;
+    /**
+     * 仓储类型(默认注解的字段类型作为仓储类型)
+     * 
+     * @return
+     */
+    Class<?> clazz() default Void.class;
 
-	/**
-	 * 标识
-	 * 
-	 * @return
-	 */
-	String value() default "";
+    /**
+     * 仓储
+     * 
+     * @return
+     */
+    String storage() default "resourceStorage";
 
-	/**
-	 * 属性
-	 * 
-	 * @return
-	 */
-	String property() default "";
+    /**
+     * 标识
+     * 
+     * @return
+     */
+    String value() default "";
 
-	/**
-	 * 是否必须
-	 * 
-	 * @return
-	 */
-	boolean necessary() default true;
+    /**
+     * 属性
+     * 
+     * @return
+     */
+    String property() default "";
+
+    /**
+     * 是否必须
+     * 
+     * @return
+     */
+    boolean necessary() default true;
 
 }

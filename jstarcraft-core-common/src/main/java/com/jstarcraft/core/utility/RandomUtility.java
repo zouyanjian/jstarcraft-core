@@ -15,6 +15,24 @@ public final class RandomUtility {
     }
 
     /**
+     * 获取随机引擎
+     * 
+     * @return
+     */
+    public static Random getRandom() {
+        return random;
+    }
+
+    /**
+     * 设置随机引擎
+     * 
+     * @param engine
+     */
+    public static void setRandom(Random engine) {
+        random = engine;
+    }
+
+    /**
      * 设置随机种子
      * 
      * @param seed
@@ -95,6 +113,20 @@ public final class RandomUtility {
     public static double randomDouble() {
         return randomDouble(Double.MAX_VALUE);
     }
+    
+    /**
+     * 洗牌
+     * 
+     * <pre>
+     * 通过随机与交换的方式实现打乱排序的目的.
+     * </pre>
+     * 
+     * @param datas
+     */
+    public static <T> void shuffle(boolean[] datas) {
+        int size = datas.length;
+        shuffle(datas, 0, size);
+    }
 
     /**
      * 洗牌
@@ -164,6 +196,28 @@ public final class RandomUtility {
     public static <T> void shuffle(T[] datas) {
         int size = datas.length;
         shuffle(datas, 0, size);
+    }
+
+    /**
+     * 洗牌
+     * 
+     * <pre>
+     * 通过随机与交换的方式实现打乱排序的目的.
+     * </pre>
+     * 
+     * @param datas
+     */
+    public static <T> void shuffle(boolean[] datas, int from, int to) {
+        int size = to - from;
+        if (size <= 1) {
+            return;
+        }
+        for (int index = from; index < to; index++) {
+            int random = RandomUtility.randomInteger(from, to);
+            boolean data = datas[index];
+            datas[index] = datas[random];
+            datas[random] = data;
+        }
     }
 
     /**
@@ -274,6 +328,16 @@ public final class RandomUtility {
             datas[index] = datas[random];
             datas[random] = data;
         }
+    }
+
+    /**
+     * 随机分布
+     * 
+     * @return
+     */
+    // TODO 考虑是否使用概率分布替代
+    public static double randomGaussian() {
+        return random.nextGaussian();
     }
 
 }

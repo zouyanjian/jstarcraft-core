@@ -15,11 +15,14 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.jstarcraft.core.utility.StringUtility;
 
 /**
@@ -49,7 +52,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行XML1.0转义
+     * 对字符串执行XML1.0加密
      * 
      * @param string
      * @return
@@ -59,7 +62,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行XML1.0翻译
+     * 对字符串执行XML1.0解密
      * 
      * @param string
      * @return
@@ -69,7 +72,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行XML1.1转义
+     * 对字符串执行XML1.1加密
      * 
      * @param string
      * @return
@@ -79,7 +82,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行XML1.1翻译
+     * 对字符串执行XML1.1解密
      * 
      * @param string
      * @return
@@ -89,7 +92,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行HTML3.0转义
+     * 对字符串执行HTML3.0加密
      * 
      * @param string
      * @return
@@ -99,7 +102,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行HTML3.0翻译
+     * 对字符串执行HTML3.0解密
      * 
      * @param string
      * @return
@@ -109,7 +112,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行HTML4.0转义
+     * 对字符串执行HTML4.0加密
      * 
      * @param string
      * @return
@@ -119,7 +122,7 @@ public class XmlUtility extends DomUtils {
     }
 
     /**
-     * 对字符串执行HTML4.0翻译
+     * 对字符串执行HTML4.0解密
      * 
      * @param string
      * @return
@@ -162,6 +165,42 @@ public class XmlUtility extends DomUtils {
         JAXBElement<Wrapper> jaxbElement = new JAXBElement<>(new QName(name), Wrapper.class, new Wrapper<T>(list));
         marshaller.marshal(jaxbElement, writer);
         return writer.getBuffer().toString();
+    }
+
+    /** 类型转换器(基于Jackson) */
+    private static final XmlMapper TYPE_CONVERTER = new XmlMapper();
+
+    /**
+     * 格式化XML
+     * 
+     * @param xml
+     * @return
+     */
+    public static String prettyXml(String xml) {
+        try {
+            Object object = TYPE_CONVERTER.readValue(xml, Object.class);
+            return TYPE_CONVERTER.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (Exception exception) {
+            String message = StringUtility.format("将XML字符串[{}]格式化时异常", xml);
+            throw new RuntimeException(message, exception);
+        }
+    }
+
+    /**
+     * 格式化HTML
+     * 
+     * @param html
+     * @return
+     */
+    public static String prettyHtml(String html) {
+        try {
+            Document document = Jsoup.parse(html);
+            document.outputSettings().prettyPrint(true);
+            return document.toString();
+        } catch (Exception exception) {
+            String message = StringUtility.format("将HTML字符串[{}]格式化时异常", html);
+            throw new RuntimeException(message, exception);
+        }
     }
 
 }

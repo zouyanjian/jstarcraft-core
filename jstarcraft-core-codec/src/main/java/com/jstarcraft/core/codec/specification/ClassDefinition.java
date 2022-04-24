@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
@@ -22,6 +23,7 @@ import com.jstarcraft.core.codec.annotation.IncludeProperty;
 import com.jstarcraft.core.codec.annotation.ProtocolConfiguration;
 import com.jstarcraft.core.codec.annotation.ProtocolConfiguration.Mode;
 import com.jstarcraft.core.codec.exception.CodecDefinitionException;
+import com.jstarcraft.core.common.io.IoUtility;
 import com.jstarcraft.core.common.reflection.ReflectionUtility;
 import com.jstarcraft.core.common.reflection.Specification;
 import com.jstarcraft.core.common.reflection.TypeUtility;
@@ -50,41 +52,41 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
     /** 规范 */
     private Specification specification;
 
-    private static final byte[] codes = new byte[Specification.values().length];
+    private static final byte[] marks = new byte[Specification.values().length];
 
     static {
         /** 数组 */
-        codes[Specification.ARRAY.ordinal()] = (byte) 0x00;
+        marks[Specification.ARRAY.ordinal()] = (byte) 0x00;
         /** 布尔 */
-        codes[Specification.BOOLEAN.ordinal()] = (byte) 0x10;
+        marks[Specification.BOOLEAN.ordinal()] = (byte) 0x10;
         /** 集合 */
-        codes[Specification.COLLECTION.ordinal()] = (byte) 0x20;
+        marks[Specification.COLLECTION.ordinal()] = (byte) 0x20;
         /** 枚举 */
-        codes[Specification.ENUMERATION.ordinal()] = (byte) 0x30;
+        marks[Specification.ENUMERATION.ordinal()] = (byte) 0x30;
         /** 时间 */
-        codes[Specification.INSTANT.ordinal()] = (byte) 0x40;
+        marks[Specification.INSTANT.ordinal()] = (byte) 0x40;
         /** 映射 */
-        codes[Specification.MAP.ordinal()] = (byte) 0x50;
+        marks[Specification.MAP.ordinal()] = (byte) 0x50;
         /** 数值 */
-        codes[Specification.NUMBER.ordinal()] = (byte) 0x60;
+        marks[Specification.NUMBER.ordinal()] = (byte) 0x60;
         /** 对象 */
-        codes[Specification.OBJECT.ordinal()] = (byte) 0x70;
+        marks[Specification.OBJECT.ordinal()] = (byte) 0x70;
         /** 字符串 */
-        codes[Specification.STRING.ordinal()] = (byte) 0x80;
+        marks[Specification.STRING.ordinal()] = (byte) 0x80;
         /** 类型 */
-        codes[Specification.TYPE.ordinal()] = (byte) 0x90;
+        marks[Specification.TYPE.ordinal()] = (byte) 0x90;
         /** 未知 */
-        codes[Specification.VOID.ordinal()] = (byte) 0xA0;
+        marks[Specification.VOID.ordinal()] = (byte) 0xA0;
     }
 
     /**
-     * 通过指定规范获取代号
+     * 通过指定规范获取记号
      * 
      * @param specification
      * @return
      */
-    public static byte getCode(Specification specification) {
-        return codes[specification.ordinal()];
+    public static byte getMark(Specification specification) {
+        return marks[specification.ordinal()];
     }
 
     private ClassDefinition(int code, Class<?> clazz, TreeSet<PropertyDefinition> properties, Specification specification) {
@@ -196,12 +198,9 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
                     properties.add(property);
                 }
             } else if (protocolConfiguration.mode() == Mode.METHOD) {
-                PropertyDescriptor[] descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
-                for (PropertyDescriptor descriptor : descriptors) {
+                Map<String, PropertyDescriptor> descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
+                for (PropertyDescriptor descriptor : descriptors.values()) {
                     String name = descriptor.getName();
-                    if (name.equals("class")) {
-                        continue;
-                    }
                     Method getter = descriptor.getReadMethod();
                     if (getter == null) {
                         continue;
@@ -237,12 +236,9 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
                     PropertyDefinition property = PropertyDefinition.instanceOf(name, code, type, field);
                     properties.add(property);
                 }
-                PropertyDescriptor[] descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
-                for (PropertyDescriptor descriptor : descriptors) {
+                Map<String, PropertyDescriptor> descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
+                for (PropertyDescriptor descriptor : descriptors.values()) {
                     String name = descriptor.getName();
-                    if (name.equals("class")) {
-                        continue;
-                    }
                     Method getter = descriptor.getReadMethod();
                     if (getter == null) {
                         continue;
@@ -273,7 +269,7 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
             byte specification = in.readByte();
             int length = in.readShort();
             byte[] bytes = new byte[length];
-            in.read(bytes);
+            IoUtility.read(in, bytes);
             String className = new String(bytes, StringUtility.CHARSET);
             Class<?> clazz = ClassUtility.getClass(className, false);
             length = in.readShort();
@@ -283,7 +279,7 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
                 short propertyCode = in.readShort();
                 length = in.readShort();
                 bytes = new byte[length];
-                in.read(bytes);
+                IoUtility.read(in, bytes);
                 String name = new String(bytes, StringUtility.CHARSET);
                 Type type = null;
                 Field field = ReflectionUtility.findField(clazz, name);
@@ -292,16 +288,14 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
                     PropertyDefinition property = PropertyDefinition.instanceOf(name, propertyCode, type, field);
                     properties.add(property);
                 } else {
-                    PropertyDescriptor[] descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
-                    for (PropertyDescriptor descriptor : descriptors) {
-                        if (name.equals(descriptor.getName())) {
-                            Method getter = descriptor.getReadMethod();
-                            Method setter = descriptor.getWriteMethod();
-                            type = descriptor.getPropertyType();
-                            PropertyDefinition property = PropertyDefinition.instanceOf(name, code, type, getter, setter);
-                            properties.add(property);
-                            break;
-                        }
+                    Map<String, PropertyDescriptor> descriptors = ReflectionUtility.getPropertyDescriptors(clazz);
+                    PropertyDescriptor descriptor = descriptors.get(name);
+                    if (descriptor != null) {
+                        Method getter = descriptor.getReadMethod();
+                        Method setter = descriptor.getWriteMethod();
+                        type = descriptor.getPropertyType();
+                        PropertyDefinition property = PropertyDefinition.instanceOf(name, code, type, getter, setter);
+                        properties.add(property);
                     }
                 }
                 if (type == null) {
@@ -321,15 +315,15 @@ public class ClassDefinition implements Comparable<ClassDefinition> {
             String name = definition.getName();
             byte[] bytes = name.getBytes(StringUtility.CHARSET);
             out.writeShort((short) code);
-            out.writeByte(getCode(specification));
+            out.writeByte(getMark(specification));
             out.writeShort((short) bytes.length);
-            out.write(bytes);
+            IoUtility.write(bytes, out);
             out.writeShort((short) definition.properties.length);
             for (PropertyDefinition property : definition.properties) {
                 bytes = property.getName().getBytes(StringUtility.CHARSET);
                 out.writeShort((short) property.getCode());
                 out.writeShort((short) bytes.length);
-                out.write(bytes);
+                IoUtility.write(bytes, out);
             }
         } catch (Exception exception) {
             throw new CodecDefinitionException(exception);

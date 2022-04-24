@@ -1,8 +1,17 @@
+详解Spring事件驱动模型:
+http://jinnianshilongnian.iteye.com/blog/1902886
+
 Spring IOC 容器源码分析:
 https://javadoop.com/post/spring-ioc
 
 扩展Spring的几种方式:
-https://nobodyiam.com/2017/02/26/several-ways-to-extend-spring/
+https://nobodyiam.com/2017/02/26/several-ways-to-extend-spring
+
+Spring框架的XML扩展特性：让Spring加载和解析你自定义的XML文件:
+http://blog.csdn.net/aitangyong/article/details/23592789
+
+spring.factories:
+https://www.cnblogs.com/itplay/p/9927892.html
 
 Spring Bean的生命周期:
 http://www.cnblogs.com/zrtqsk/p/3735273.html
@@ -21,3 +30,15 @@ http://www.cnblogs.com/GooPolaris/p/8169611.html
 
 BeanDefinition的创建(BeanDefinitionHolder的创建):
 https://www.cnblogs.com/GooPolaris/p/8177989.html
+
+深入浅出Spring Boot起步依赖和自动配置:
+https://www.jianshu.com/p/cfb0d20bd063
+
+深入理解Spring Boot之自动装配:
+https://www.cnblogs.com/niechen/p/9027804.html
+
+Spring Boot条件注解:
+https://blog.csdn.net/yuanlaijike/article/details/101312164
+
+SpEL表达式总结:
+https://www.jianshu.com/p/e0b50053b5d3
